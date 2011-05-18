@@ -31,7 +31,7 @@ DniKZWb36R7qpO9RMWgHbhUpkcT/EYSutIRgp+hYzQ==</license>
     </pipeline>
     <pipeline name="Development" labeltemplate="${upstreamArtifact}">
       <materials>
-        <git url="git://github.com/flessa/company-news-devops.git" />
+        <git url="git://github.com/halvards/company-news-devops.git" />
         <pipeline pipelineName="MainBuild" stageName="MainBuild" materialName="upstreamArtifact"/>
       </materials>
       <stage name="Deploy">
@@ -44,6 +44,46 @@ DniKZWb36R7qpO9RMWgHbhUpkcT/EYSutIRgp+hYzQ==</license>
           <job name="Deploy">
             <tasks>
               <exec command="./go" args="mc:deploy[dev]" />
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="UAT" labeltemplate="${upstreamArtifact}">
+      <materials>
+        <git url="git://github.com/halvards/company-news-devops.git" />
+        <pipeline pipelineName="Development" stageName="Deploy" materialName="upstreamArtifact"/>
+      </materials>
+      <stage name="Deploy">
+        <approval type="manual" />
+        <environmentvariables>
+          <variable name="JAVA_HOME">/usr/lib/jvm/java-1.6.0/</variable>
+          <variable name="STOMP_SERVER">127.0.0.1</variable>
+        </environmentvariables>
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <exec command="./go" args="mc:deploy[uat]" />
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Production" labeltemplate="${upstreamArtifact}">
+      <materials>
+        <git url="git://github.com/halvards/company-news-devops.git" />
+        <pipeline pipelineName="UAT" stageName="Deploy" materialName="upstreamArtifact"/>
+      </materials>
+      <stage name="Deploy">
+        <approval type="manual" />
+        <environmentvariables>
+          <variable name="JAVA_HOME">/usr/lib/jvm/java-1.6.0/</variable>
+          <variable name="STOMP_SERVER">127.0.0.1</variable>
+        </environmentvariables>
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <exec command="./go" args="mc:deploy[prod]" />
             </tasks>
           </job>
         </jobs>
